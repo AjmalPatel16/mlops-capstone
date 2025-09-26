@@ -30,8 +30,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/mlops-capstone:latest .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest .
 
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlops-capstone:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest 
