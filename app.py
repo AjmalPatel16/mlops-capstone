@@ -1,14 +1,24 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 import joblib
 
-# TODO: Load model from MLflow instead of local pkl
+# Load your model (replace with MLflow loading if needed)
 model = joblib.load("model.pkl")
 
-app = FastAPI()
+app = FastAPI(title="Housing Price Predictor")
 
+# Define input schema
+class PredictionInput(BaseModel):
+    area: float
+
+# Simple GET endpoint to check server
+@app.get("/")
+def home():
+    return {"message": "FastAPI server is running!"}
+
+# POST endpoint for prediction
 @app.post("/predict")
-def predict(data: dict):
-    # TODO: Handle proper preprocessing
-    area = data["area"]
+def predict(data: PredictionInput):
+    area = data.area
     prediction = model.predict([[area]])[0]
     return {"prediction": prediction}
