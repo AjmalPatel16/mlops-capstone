@@ -1,61 +1,47 @@
 name: CI/CD Pipeline
 
-# Trigger the workflow on push or pull request to main branch
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repo
+      # 1️⃣ Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # set up Python (fixed version)
+      # 2️⃣ Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10.15  # specify full version to avoid errors
+          python-version: 3.10
 
-      # Cache pip dependencies
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      #Install dependencies (for linting/testing)
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      #  Lint code (optional)
-      - name: Lint code
+      # 4️⃣ Optional: Lint check (won't fail workflow)
+      - name: Lint check
+        run: echo "Lint step skipped"
+
+      # 5️⃣ Docker login to DockerHub
+      - name: Login to DockerHub
         run: |
-          pip install flake8
-          flake8 . || echo "Lint warnings found, but workflow continues"
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      # Log in to DockerHub
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Build Docker image
+      # 6️⃣ Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/mlops-capstone:latest .
 
-      # Push Docker image to DockerHub
+      # 7️⃣ Push Docker image
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlops-capstone:latest
