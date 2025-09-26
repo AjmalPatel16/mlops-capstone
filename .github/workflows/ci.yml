@@ -23,7 +23,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-
       - name: Docker login
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
