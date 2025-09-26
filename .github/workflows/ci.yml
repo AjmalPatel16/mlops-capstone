@@ -12,41 +12,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      #  Checkout the repo
+      # Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      #  Set up Python
+      # set up Python (fixed version)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: 3.10.15  # specify full version to avoid errors
 
-      #  Install dependencies (for linting/testing)
+      # Cache pip dependencies
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      #Install dependencies (for linting/testing)
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Lint code (optional, ensures code quality)
+      #  Lint code (optional)
       - name: Lint code
         run: |
           pip install flake8
           flake8 .
 
-      #  Log in to DockerHub
+      # Log in to DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      #  Build Docker image
+      # Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest .
 
-      #  Push Docker image to DockerHub
+      # Push Docker image to DockerHub
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/housing-predictor:latest
